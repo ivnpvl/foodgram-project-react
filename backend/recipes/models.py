@@ -1,3 +1,4 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth import get_user_model
 from django.db import models
 
@@ -8,28 +9,28 @@ User = get_user_model()
 class Ingredient(models.Model):
     name = models.CharField(
         verbose_name='Название',
-        max_length=64,
+        max_length=200,
     )
     measurement_unit = models.CharField(
         verbose_name='Единицы измерения',
-        max_length=16,
+        max_length=200,
     )
 
 
 class Tag(models.Model):
     name = models.CharField(
         verbose_name='Название',
-        max_length=64,
+        max_length=200,
         unique=True,
     )
     color = models.CharField(
-        verbose_name='Цвет',
-        max_length=64,
+        verbose_name='Цвет в HEX',
+        max_length=7,
         unique=True,
     )
     slug = models.SlugField(
-        verbose_name='Индекс',
-        max_length=64,
+        verbose_name='Уникальный слаг',
+        max_length=200,
         unique=True,
     )
 
@@ -41,13 +42,18 @@ class Recipe(models.Model):
         on_delete=models.CASCADE,
         related_name='recipes',
     )
+    pub_date = models.DateTimeField(
+        verbose_name='Дата публикации',
+        auto_now_add=True,
+        db_index=True,
+    )
     name = models.CharField(
         verbose_name='Название',
-        max_length=128,
+        max_length=200,
         unique=True,
     )
     image = models.ImageField(
-        verbose_name='Изображение',
+        verbose_name='Картинка, закодированная в Base64',
         upload_to='recipes/',
     )
     text = models.TextField(
@@ -55,14 +61,14 @@ class Recipe(models.Model):
     )
     ingredients = models.ManyToManyField(
         Ingredient,
-        verbose_name='Ингредиенты',
+        verbose_name='Список ингредиентов',
         on_delete=models.CASCADE,
         through='RecipeIngredient',
         related_name='recipes',
     )
     tags = models.ManyToManyField(
         Tag,
-        verbose_name='Тэги',
+        verbose_name='Список id тэгов',
         on_delete=models.SET_NULL,
         through='RecipeTag',
         related_name='recipes',
@@ -70,7 +76,11 @@ class Recipe(models.Model):
         null=True,
     )
     cooking_time = models.PositiveSmallIntegerField(
-        verbose_name='Время приготовления',
+        verbose_name='Время приготовления в минутах',
+        validators=[
+            MaxValueValidator(1440, 'Кажется, у нас всё сгорит!'),
+            MinValueValidator(1, 'Невозможно готовить настолько быстро!'),
+        ],
     )
 
 
