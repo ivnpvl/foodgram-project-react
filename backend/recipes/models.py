@@ -77,10 +77,7 @@ class Recipe(models.Model):
     )
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления в минутах',
-        validators=[
-            MaxValueValidator(1440, 'Кажется, у нас всё сгорит!'),
-            MinValueValidator(1, 'Невозможно готовить настолько быстро!'),
-        ],
+        validators=[MaxValueValidator(1440), MinValueValidator(1)],
     )
 
 
@@ -99,6 +96,7 @@ class RecipeIngredient(models.Model):
     )
     amount = models.PositiveSmallIntegerField(
         verbose_name='Количество',
+        validators=[MinValueValidator(1)],
     )
 
 
