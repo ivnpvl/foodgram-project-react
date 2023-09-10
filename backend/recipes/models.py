@@ -1,9 +1,7 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.contrib.auth import get_user_model
 from django.db import models
 
-
-User = get_user_model()
+from users.models import User
 
 
 class Ingredient(models.Model):
