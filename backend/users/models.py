@@ -16,14 +16,14 @@ class Subscription(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='subscrying',
+        related_name='subscription',
     )
 
     class Meta:
         ordering = ('user',)
         constraints = [
             models.UniqueConstraint(
-                name='unique_user_author',
+                name='unique_subscription',
                 fields=['user', 'author'],
             ),
             models.CheckConstraint(
@@ -49,7 +49,7 @@ class Favorite(models.Model):
         ordering = ('user',)
         constraints = [
             models.UniqueConstraint(
-                name='unique_user_recipe',
+                name='unique_favorite_recipe',
                 fields=['user', 'recipe'],
             ),
         ]
@@ -71,7 +71,7 @@ class ShoppingCart(models.Model):
         ordering = ('user',)
         constraints = [
             models.UniqueConstraint(
-                name='unique_user_recipe',
+                name='unique_recipe_in_cart',
                 fields=['user', 'recipe'],
             ),
         ]

@@ -16,6 +16,9 @@ class Ingredient(models.Model):
         max_length=200,
     )
 
+    def __str__(self):
+        return self.name
+
 
 class Tag(models.Model):
     name = models.CharField(
@@ -62,18 +65,14 @@ class Recipe(models.Model):
     ingredients = models.ManyToManyField(
         Ingredient,
         verbose_name='Список ингредиентов',
-        on_delete=models.CASCADE,
         through='RecipeIngredient',
         related_name='recipes',
     )
     tags = models.ManyToManyField(
         Tag,
         verbose_name='Список id тэгов',
-        on_delete=models.SET_NULL,
         through='RecipeTag',
         related_name='recipes',
-        blank=True,
-        null=True,
     )
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления в минутах',
