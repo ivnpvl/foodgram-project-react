@@ -1,0 +1,26 @@
+### GET users
+GET http://localhost:8000/api/users/
+
+### Add new user
+POST http://localhost:8000/api/users/
+content-type: application/json
+
+{
+    "email": "vpupkin@yandex.ru",
+    "username": "vasya.pupkin",
+    "first_name": "Вася",
+    "last_name": "Пупкин",
+    "password": "Qwerty123"
+}
+
+### Get user with id=1
+GET http://localhost:8000/api/users/1/
+
+### Obtain token
+POST http://localhost:8000/api/token/login/
+content-type: application/json
+
+{
+    "password": "Qwerty123",
+    "email": "vpupkin@yandex.ru",
+}

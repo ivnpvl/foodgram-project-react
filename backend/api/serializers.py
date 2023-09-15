@@ -10,6 +10,7 @@ class UserSerializer(serializers.ModelSerializer):
         max_length=254,
         validators=[UniqueValidator(queryset=User.objects.all())],
     )
+    id = serializers.IntegerField(read_only=True)
     username = serializers.CharField(
         max_length=150,
         validators=[
@@ -19,12 +20,12 @@ class UserSerializer(serializers.ModelSerializer):
     )
     first_name = serializers.CharField(max_length=150)
     last_name = serializers.CharField(max_length=150)
-    password = serializers.CharField(max_length=150)
+    password = serializers.CharField(max_length=150, write_only=True)
 
     class Meta:
         model = User
         fields = (
-            'email', 'username', 'first_name', 'last_name', 'password'
+            'email', 'id', 'username', 'first_name', 'last_name', 'password'
         )
 
 
