@@ -1,9 +1,7 @@
-from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-
-User = get_user_model()
+from users.models import User
 
 
 class Ingredient(models.Model):
@@ -112,3 +110,47 @@ class RecipeTag(models.Model):
         on_delete=models.CASCADE,
         related_name='recipe',
     )
+
+
+class Favorite(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='favorite',
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='is_favorite',
+    )
+
+    class Meta:
+        ordering = ('user',)
+        constraints = [
+            models.UniqueConstraint(
+                name='unique_favorite_recipe',
+                fields=['user', 'recipe'],
+            ),
+        ]
+
+
+class ShoppingCart(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='shoping_cart',
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='in_shoping_cart',
+    )
+
+    class Meta:
+        ordering = ('user',)
+        constraints = [
+            models.UniqueConstraint(
+                name='unique_recipe_in_cart',
+                fields=['user', 'recipe'],
+            ),
+        ]

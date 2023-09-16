@@ -1,26 +1,11 @@
-from django.contrib.auth.validators import UnicodeUsernameValidator
 from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
 
 from users.models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField(
-        max_length=254,
-        validators=[UniqueValidator(queryset=User.objects.all())],
-    )
     id = serializers.IntegerField(read_only=True)
-    username = serializers.CharField(
-        max_length=150,
-        validators=[
-            UnicodeUsernameValidator(),
-            UniqueValidator(queryset=User.objects.all()),
-        ],
-    )
-    first_name = serializers.CharField(max_length=150)
-    last_name = serializers.CharField(max_length=150)
-    password = serializers.CharField(max_length=150, write_only=True)
+    password = serializers.CharField(write_only=True)
 
     class Meta:
         model = User

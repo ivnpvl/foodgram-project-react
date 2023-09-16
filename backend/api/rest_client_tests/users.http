@@ -17,10 +17,13 @@ content-type: application/json
 GET http://localhost:8000/api/users/1/
 
 ### Obtain token
-POST http://localhost:8000/api/token/login/
+POST http://localhost:8000/api/auth/token/login/
 content-type: application/json
 
 {
     "password": "Qwerty123",
-    "email": "vpupkin@yandex.ru",
+    "email": "vpupkin@yandex.ru"
 }
+
+###
+OPTIONS http://localhost:8000/api/auth/token/login/

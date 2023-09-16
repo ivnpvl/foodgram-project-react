@@ -1,10 +1,31 @@
-from django.contrib.auth import get_user_model
+from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-from recipes.models import Recipe
 
+class User(AbstractUser):
+    email = models.EmailField(
+        verbose_name='Адрес электронной почты',
+        max_length=254,
+        unique=True,
+    )
+    username = models.CharField(
+        verbose_name='Уникальный юзернэйм',
+        max_length=150,
+        validators=[UnicodeUsernameValidator],
+        unique=True,
+    )
+    first_name = models.CharField(verbose_name='Имя', max_length=150)
+    last_name = models.CharField(verbose_name='Фамилия', max_length=150)
+    password = models.CharField(verbose_name='Пароль', max_length=150)
 
-User = get_user_model()
+    class Meta:
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
+        ordering = ['username']
+
+    def __str__(self):
+        return self.username
 
 
 class Subscription(models.Model):
@@ -29,49 +50,5 @@ class Subscription(models.Model):
             models.CheckConstraint(
                 name='prevent_self_follow',
                 check=~models.Q(user=models.F('author')),
-            ),
-        ]
-
-
-class Favorite(models.Model):
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='favorite',
-    )
-    recipe = models.ForeignKey(
-        Recipe,
-        on_delete=models.CASCADE,
-        related_name='is_favorite',
-    )
-
-    class Meta:
-        ordering = ('user',)
-        constraints = [
-            models.UniqueConstraint(
-                name='unique_favorite_recipe',
-                fields=['user', 'recipe'],
-            ),
-        ]
-
-
-class ShoppingCart(models.Model):
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='shoping_cart',
-    )
-    recipe = models.ForeignKey(
-        Recipe,
-        on_delete=models.CASCADE,
-        related_name='in_shoping_cart',
-    )
-
-    class Meta:
-        ordering = ('user',)
-        constraints = [
-            models.UniqueConstraint(
-                name='unique_recipe_in_cart',
-                fields=['user', 'recipe'],
             ),
         ]
