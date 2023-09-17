@@ -1,9 +1,15 @@
+@Host = localhost:8000
+
+
 ### GET users
-GET http://localhost:8000/api/users/
+GET /api/users/
+Host: {{Host}}
+
 
 ### Add new user
-POST http://localhost:8000/api/users/
-content-type: application/json
+POST /api/users/
+Host: {{Host}}
+Content-type: application/json
 
 {
     "email": "vpupkin@yandex.ru",
@@ -13,17 +19,49 @@ content-type: application/json
     "password": "Qwerty123"
 }
 
+
+### Add another user
+POST /api/users/
+Host: {{Host}}
+Content-type: application/json
+
+{
+    "email": "tim@yandex.ru",
+    "username": "tim",
+    "first_name": "Тимофей",
+    "last_name": "Кошечкин",
+    "password": "kitting21"
+}
+
+
 ### Get user with id=1
-GET http://localhost:8000/api/users/1/
+GET /api/users/1/
+Host: {{Host}}
+Content-type: application/json
+
 
 ### Obtain token
-POST http://localhost:8000/api/auth/token/login/
-content-type: application/json
+POST /api/auth/token/login/
+Host: {{Host}}
+Content-type: application/json
 
 {
     "password": "Qwerty123",
     "email": "vpupkin@yandex.ru"
 }
 
+
+### Obtain another token
+POST /api/auth/token/login/
+Host: {{Host}}
+Content-type: application/json
+
+{
+    "password": "kitting21",
+    "email": "tim@yandex.ru"
+}
+
+
 ###
-OPTIONS http://localhost:8000/api/auth/token/login/
+OPTIONS /api/auth/token/login/
+Host: {{Host}}
