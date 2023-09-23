@@ -16,7 +16,7 @@ Content-type: application/json
     "username": "vasya.pupkin",
     "first_name": "Вася",
     "last_name": "Пупкин",
-    "password": "Qwerty123"
+    "password": "Qwerty123f"
 }
 
 
@@ -46,7 +46,7 @@ Host: {{Host}}
 Content-type: application/json
 
 {
-    "password": "Qwerty123",
+    "password": "Qwerty123f",
     "email": "vpupkin@yandex.ru"
 }
 

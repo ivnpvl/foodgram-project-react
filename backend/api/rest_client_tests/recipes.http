@@ -1,0 +1,21 @@
+@Host = localhost:8000
+
+
+### GET ingredients
+GET /api/ingredients/
+Host: {{Host}}
+
+
+### GET ingredient by id
+GET /api/ingredients/1/
+Host: {{Host}}
+
+
+### GET tags
+GET /api/tags/
+Host: {{Host}}
+
+
+### GET ingredient by id
+GET /api/tags/1/
+Host: {{Host}}
