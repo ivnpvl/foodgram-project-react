@@ -1,4 +1,5 @@
 @Host = localhost:8000
+@Token = d5d926ab6f25a42d1aba7efb23e3708f14cdb172
 
 
 ### GET users
@@ -40,28 +41,44 @@ Host: {{Host}}
 Content-type: application/json
 
 
+### Add another user
+POST /api/users/
+Host: {{Host}}
+Content-type: application/json
+
+{
+    "email": "ivnpvl@yandex.ru",
+    "username": "ivnpvl",
+    "first_name": "Иван",
+    "last_name": "Павлов",
+    "password": "xxbczbczbxa"
+}
+
 ### Obtain token
 POST /api/auth/token/login/
 Host: {{Host}}
 Content-type: application/json
 
 {
-    "password": "Qwerty123f",
-    "email": "vpupkin@yandex.ru"
+    "password": "xxbczbczbxa",
+    "email": "ivnpvl@yandex.ru"
 }
 
 
-### Obtain another token
-POST /api/auth/token/login/
+### Change password
+POST /api/users/set_password/
 Host: {{Host}}
 Content-type: application/json
+Authorization: token {{Token}}
 
 {
-    "password": "kitting21",
-    "email": "tim@yandex.ru"
+    "new_password": "xxbczbczbxa",
+    "current_password": "xxbczbczbxa1"
 }
 
 
-###
-OPTIONS /api/auth/token/login/
+### Delete token
+POST /api/auth/token/logout/
 Host: {{Host}}
+Content-type: application/json
+Authorization: token {{Token}}

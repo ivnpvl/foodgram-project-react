@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework.serializers import ModelSerializer, SerializerMethodField
 
+
 from recipes.models import Ingredient, Recipe, Tag
 from .utility import Base64ImageField, ReadOnlyModelSerializer
 
@@ -28,9 +29,9 @@ class UserSerializer(ModelSerializer):
 
     def get_is_subscribed(self, obj):
         user = self.context['request'].user
-        return (
-            user.is_authenticated()
-            and user.subscyers.filter(author=obj).exists()
+        return bool(
+            user.is_authenticated
+            and user.subsciptions.filter(author=obj).exists()
         )
 
 
