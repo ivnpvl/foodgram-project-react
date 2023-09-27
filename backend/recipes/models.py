@@ -15,6 +15,10 @@ class Ingredient(models.Model):
         max_length=200,
     )
 
+    class Meta:
+        verbose_name = 'Ингредиент'
+        ordering = ['name']
+
     def __str__(self):
         return self.name
 
@@ -35,6 +39,13 @@ class Tag(models.Model):
         max_length=200,
         unique=True,
     )
+
+    class Meta:
+        verbose_name = 'Тэг'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
 
 
 class Recipe(models.Model):
@@ -78,24 +89,40 @@ class Recipe(models.Model):
         validators=[MaxValueValidator(1440), MinValueValidator(1)],
     )
 
+    class Meta:
+        verbose_name = 'Рецепт'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
 
 class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         verbose_name='Рецепт',
         on_delete=models.CASCADE,
-        related_name='ingredient',
+        related_name='ingredient_relations',
     )
     ingredient = models.ForeignKey(
         Ingredient,
         verbose_name='Ингредиент',
         on_delete=models.CASCADE,
-        related_name='recipe',
+        related_name='recipe_relations',
     )
     amount = models.PositiveSmallIntegerField(
         verbose_name='Количество',
         validators=[MinValueValidator(1)],
     )
+
+    class Meta:
+        ordering = ('recipe',)
+        constraints = [
+            models.UniqueConstraint(
+                name='unique_ingredient_in_recipe',
+                fields=('recipe', 'ingredient'),
+            ),
+        ]
 
 
 class RecipeTag(models.Model):
@@ -103,34 +130,43 @@ class RecipeTag(models.Model):
         Recipe,
         verbose_name='Рецепт',
         on_delete=models.CASCADE,
-        related_name='tag',
+        related_name='tag_relations',
     )
     tag = models.ForeignKey(
         Tag,
         verbose_name='Тэг',
         on_delete=models.CASCADE,
-        related_name='recipe',
+        related_name='recipe_relations',
     )
+
+    class Meta:
+        ordering = ('recipe',)
+        constraints = [
+            models.UniqueConstraint(
+                name='unique_tag_on_recipe',
+                fields=('recipe', 'tag'),
+            ),
+        ]
 
 
 class Favorite(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='favorite',
+        related_name='favorites',
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='is_favorite',
+        related_name='in_favorite',
     )
 
     class Meta:
         ordering = ('user',)
         constraints = [
             models.UniqueConstraint(
-                name='unique_favorite_recipe',
-                fields=['user', 'recipe'],
+                name='unique_recipe_in_favorite',
+                fields=('user', 'recipe'),
             ),
         ]
 
@@ -152,6 +188,6 @@ class ShoppingCart(models.Model):
         constraints = [
             models.UniqueConstraint(
                 name='unique_recipe_in_cart',
-                fields=['user', 'recipe'],
+                fields=('user', 'recipe'),
             ),
         ]

@@ -19,12 +19,11 @@ class CustomUser(AbstractUser):
     last_name = models.CharField(verbose_name='Фамилия', max_length=150)
     password = models.CharField(verbose_name='Пароль', max_length=150)
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+    REQUIRED_FIELDS = ('username', 'first_name', 'last_name')
 
     class Meta:
         verbose_name = 'Пользователь'
-        verbose_name_plural = 'Пользователи'
-        ordering = ['username']
+        ordering = ('username',)
 
     def __str__(self):
         return self.username
@@ -34,12 +33,12 @@ class Subscription(models.Model):
     user = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
-        related_name='subscryer',
+        related_name='subscriptions'
     )
     author = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
-        related_name='subscription',
+        related_name='subscribers',
     )
 
     class Meta:
@@ -47,10 +46,13 @@ class Subscription(models.Model):
         constraints = [
             models.UniqueConstraint(
                 name='unique_subscription',
-                fields=['user', 'author'],
+                fields=('user', 'author'),
             ),
             models.CheckConstraint(
                 name='prevent_self_follow',
                 check=~models.Q(user=models.F('author')),
             ),
         ]
+
+    def __str__(self):
+        return f'{self.user} подписан на {self.author}'

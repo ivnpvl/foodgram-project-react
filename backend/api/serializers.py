@@ -1,20 +1,14 @@
 from django.contrib.auth import get_user_model
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import ModelSerializer, SerializerMethodField
 
 from recipes.models import Ingredient, Recipe, Tag
+from .utility import Base64ImageField, ReadOnlyModelSerializer
 
 User = get_user_model()
 
 
-class ReadOnlyModelSerializer(ModelSerializer):
-    def get_fields(self, *args, **kwargs):
-        fields = super().get_fields(*args, **kwargs)
-        for field in fields:
-            fields[field].read_only = True
-        return fields
-
-
 class UserSerializer(ModelSerializer):
+    is_subscribed = SerializerMethodField()
 
     class Meta:
         model = User
@@ -32,6 +26,13 @@ class UserSerializer(ModelSerializer):
             'password': {'write_only': True},
         }
 
+    def get_is_subscribed(self, obj):
+        user = self.context['request'].user
+        return (
+            user.is_authenticated()
+            and user.subscyers.filter(author=obj).exists()
+        )
+
 
 class IngredientSerializer(ReadOnlyModelSerializer):
 
@@ -48,6 +49,12 @@ class TagSerializer(ReadOnlyModelSerializer):
 
 
 class RecipeSerializer(ModelSerializer):
+    tags = TagSerializer(many=True, read_only=True)
+    author = UserSerializer(read_only=True)
+    ingredients = IngredientSerializer(many=True)
+    is_favorite = SerializerMethodField()
+    is_in_shopping_cart = SerializerMethodField()
+    image = Base64ImageField()
 
     class Meta:
         model = Recipe
