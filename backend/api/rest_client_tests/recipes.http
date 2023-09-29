@@ -1,4 +1,5 @@
 @Host = localhost:8000
+@Token = d5d926ab6f25a42d1aba7efb23e3708f14cdb172
 
 
 ### GET ingredients
@@ -16,6 +17,27 @@ GET /api/tags/
 Host: {{Host}}
 
 
-### GET ingredient by id
+### Get tag by id
 GET /api/tags/1/
 Host: {{Host}}
+
+
+### Get recipes
+GET /api/recipes/
+Host: {{Host}}
+Authorization: token {{Token}}
+
+### Create recipe
+POST /api/recipes/
+Host: {{Host}}
+Content-type: application/json
+Authorization: token {{Token}}
+
+{
+    "ingredients": [{"id": 1123, "amount": 10}],
+    "tags": [1, 2],
+    "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABieywaAAAACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==",
+    "name": "test_1",
+    "text": "test_recipe",
+    "cooking_time": 1
+}

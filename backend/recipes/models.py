@@ -17,6 +17,7 @@ class Ingredient(models.Model):
 
     class Meta:
         verbose_name = 'Ингредиент'
+        verbose_name_plural = 'Ингредиенты'
         ordering = ['name']
 
     def __str__(self):
@@ -42,6 +43,7 @@ class Tag(models.Model):
 
     class Meta:
         verbose_name = 'Тэг'
+        verbose_name_plural = 'Тэги'
         ordering = ['name']
 
     def __str__(self):
@@ -91,6 +93,7 @@ class Recipe(models.Model):
 
     class Meta:
         verbose_name = 'Рецепт'
+        verbose_name_plural = 'Рецепты'
         ordering = ['name']
 
     def __str__(self):
@@ -175,12 +178,12 @@ class ShoppingCart(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='shoping_cart',
+        related_name='shopping_cart',
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='in_shoping_cart',
+        related_name='in_shopping_cart',
     )
 
     class Meta:

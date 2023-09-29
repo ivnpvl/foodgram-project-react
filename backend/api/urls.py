@@ -9,7 +9,6 @@ router.register('ingredients', IngredientViewSet, 'ingredients')
 router.register('recipes', RecipeViewSet, 'recipes')
 router.register('tags', TagViewSet, 'tags')
 
-
 urlpatterns = [
     path('', include(router.urls)),
     path('', include('djoser.urls')),
