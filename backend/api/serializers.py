@@ -107,11 +107,24 @@ class RecipeSerializer(ModelSerializer):
         for tag in tags:
             RecipeTag.objects.create(recipe=recipe, tag=tag)
         for ingredient_data in ingredients:
-            ingredient = ingredient_data.get('id')
-            amount = ingredient_data.get('amount')
             RecipeIngredient.objects.create(
                 recipe=recipe,
-                ingredient=ingredient,
-                amount=amount,
+                ingredient=ingredient_data.get('id'),
+                amount=ingredient_data.get('amount'),
             )
         return recipe
+
+    def to_representation(self, instance):
+        data = super(RecipeSerializer, self).to_representation(instance)
+        data.update(tags=TagSerializer(instance.tags, many=True).data)
+        ingredients = IngredientSerializer(
+            instance.ingredients,
+            many=True
+        ).data
+        ingredients.sort(key=lambda data: data.get('id'))
+        initials = self.initial_data.get('ingredients')
+        initials.sort(key=lambda data: data.get('id'))
+        for ingredient, initial in zip(ingredients, initials):
+            ingredient['amount'] = initial['amount']
+        data.update(ingredients=ingredients)
+        return data

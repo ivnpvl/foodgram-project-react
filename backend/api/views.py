@@ -1,17 +1,17 @@
-from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from rest_framework.viewsets import ModelViewSet
 
 from recipes.models import Ingredient, Recipe, Tag
 from .permissions import IsAdminOrReadOnly
 from .serializers import IngredientSerializer, RecipeSerializer, TagSerializer
 
 
-class IngredientViewSet(ReadOnlyModelViewSet):
+class IngredientViewSet(ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (IsAdminOrReadOnly,)
 
 
-class TagViewSet(ReadOnlyModelViewSet):
+class TagViewSet(ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = (IsAdminOrReadOnly,)

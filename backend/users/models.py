@@ -1,23 +1,33 @@
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
-from django.db import models
+from django.db.models import (
+    Model,
+    CharField,
+    EmailField,
+    ForeignKey,
+    CASCADE,
+    CheckConstraint,
+    UniqueConstraint,
+    Q,
+    F,
+)
 
 
 class CustomUser(AbstractUser):
-    email = models.EmailField(
+    email = EmailField(
         verbose_name='Адрес электронной почты',
         max_length=254,
         unique=True,
     )
-    username = models.CharField(
+    username = CharField(
         verbose_name='Уникальный юзернэйм',
         max_length=150,
         validators=[UnicodeUsernameValidator],
         unique=True,
     )
-    first_name = models.CharField(verbose_name='Имя', max_length=150)
-    last_name = models.CharField(verbose_name='Фамилия', max_length=150)
-    password = models.CharField(verbose_name='Пароль', max_length=150)
+    first_name = CharField(verbose_name='Имя', max_length=150)
+    last_name = CharField(verbose_name='Фамилия', max_length=150)
+    password = CharField(verbose_name='Пароль', max_length=150)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ('username', 'first_name', 'last_name')
 
@@ -30,28 +40,28 @@ class CustomUser(AbstractUser):
         return self.username
 
 
-class Subscription(models.Model):
-    user = models.ForeignKey(
+class Subscription(Model):
+    user = ForeignKey(
         CustomUser,
-        on_delete=models.CASCADE,
+        on_delete=CASCADE,
         related_name='subscriptions',
     )
-    author = models.ForeignKey(
+    author = ForeignKey(
         CustomUser,
-        on_delete=models.CASCADE,
+        on_delete=CASCADE,
         related_name='subscribers',
     )
 
     class Meta:
         ordering = ('user',)
         constraints = [
-            models.UniqueConstraint(
+            UniqueConstraint(
                 name='unique_subscription',
                 fields=('user', 'author'),
             ),
-            models.CheckConstraint(
+            CheckConstraint(
                 name='prevent_self_follow',
-                check=~models.Q(user=models.F('author')),
+                check=~Q(user=F('author')),
             ),
         ]
 

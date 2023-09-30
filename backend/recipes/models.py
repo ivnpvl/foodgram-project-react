@@ -1,16 +1,25 @@
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db import models
+from django.db.models import (
+    Model,
+    CharField,
+    DateTimeField,
+    ImageField,
+    ManyToManyField,
+    PositiveSmallIntegerField,
+    TextField,
+    SlugField,
+    ForeignKey,
+    CASCADE,
+    UniqueConstraint,
+)
 
 User = get_user_model()
 
 
-class Ingredient(models.Model):
-    name = models.CharField(
-        verbose_name='Название',
-        max_length=200,
-    )
-    measurement_unit = models.CharField(
+class Ingredient(Model):
+    name = CharField(verbose_name='Название', max_length=200)
+    measurement_unit = CharField(
         verbose_name='Единицы измерения',
         max_length=200,
     )
@@ -24,18 +33,18 @@ class Ingredient(models.Model):
         return self.name
 
 
-class Tag(models.Model):
-    name = models.CharField(
+class Tag(Model):
+    name = CharField(
         verbose_name='Название',
         max_length=200,
         unique=True,
     )
-    color = models.CharField(
+    color = CharField(
         verbose_name='Цвет в HEX',
         max_length=7,
         unique=True,
     )
-    slug = models.SlugField(
+    slug = SlugField(
         verbose_name='Уникальный слаг',
         max_length=200,
         unique=True,
@@ -50,43 +59,41 @@ class Tag(models.Model):
         return self.name
 
 
-class Recipe(models.Model):
-    author = models.ForeignKey(
+class Recipe(Model):
+    author = ForeignKey(
         User,
         verbose_name='Автор',
-        on_delete=models.CASCADE,
+        on_delete=CASCADE,
         related_name='recipes',
     )
-    pub_date = models.DateTimeField(
+    pub_date = DateTimeField(
         verbose_name='Дата публикации',
         auto_now_add=True,
         db_index=True,
     )
-    name = models.CharField(
+    name = CharField(
         verbose_name='Название',
         max_length=200,
         unique=True,
     )
-    image = models.ImageField(
+    image = ImageField(
         verbose_name='Картинка, закодированная в Base64',
-        upload_to='recipes/',
+        upload_to='media/',
     )
-    text = models.TextField(
-        verbose_name='Описание',
-    )
-    ingredients = models.ManyToManyField(
+    text = TextField(verbose_name='Описание')
+    ingredients = ManyToManyField(
         Ingredient,
         verbose_name='Список ингредиентов',
         through='RecipeIngredient',
         related_name='recipes',
     )
-    tags = models.ManyToManyField(
+    tags = ManyToManyField(
         Tag,
         verbose_name='Список id тэгов',
         through='RecipeTag',
         related_name='recipes',
     )
-    cooking_time = models.PositiveSmallIntegerField(
+    cooking_time = PositiveSmallIntegerField(
         verbose_name='Время приготовления в минутах',
         validators=[MaxValueValidator(1440), MinValueValidator(1)],
     )
@@ -100,20 +107,20 @@ class Recipe(models.Model):
         return self.name
 
 
-class RecipeIngredient(models.Model):
-    recipe = models.ForeignKey(
+class RecipeIngredient(Model):
+    recipe = ForeignKey(
         Recipe,
         verbose_name='Рецепт',
-        on_delete=models.CASCADE,
+        on_delete=CASCADE,
         related_name='ingredient_relations',
     )
-    ingredient = models.ForeignKey(
+    ingredient = ForeignKey(
         Ingredient,
         verbose_name='Ингредиент',
-        on_delete=models.CASCADE,
+        on_delete=CASCADE,
         related_name='recipe_relations',
     )
-    amount = models.PositiveSmallIntegerField(
+    amount = PositiveSmallIntegerField(
         verbose_name='Количество',
         validators=[MinValueValidator(1)],
     )
@@ -121,75 +128,75 @@ class RecipeIngredient(models.Model):
     class Meta:
         ordering = ('recipe',)
         constraints = [
-            models.UniqueConstraint(
+            UniqueConstraint(
                 name='unique_ingredient_in_recipe',
                 fields=('recipe', 'ingredient'),
             ),
         ]
 
 
-class RecipeTag(models.Model):
-    recipe = models.ForeignKey(
+class RecipeTag(Model):
+    recipe = ForeignKey(
         Recipe,
         verbose_name='Рецепт',
-        on_delete=models.CASCADE,
+        on_delete=CASCADE,
         related_name='tag_relations',
     )
-    tag = models.ForeignKey(
+    tag = ForeignKey(
         Tag,
         verbose_name='Тэг',
-        on_delete=models.CASCADE,
+        on_delete=CASCADE,
         related_name='recipe_relations',
     )
 
     class Meta:
         ordering = ('recipe',)
         constraints = [
-            models.UniqueConstraint(
+            UniqueConstraint(
                 name='unique_tag_on_recipe',
                 fields=('recipe', 'tag'),
             ),
         ]
 
 
-class Favorite(models.Model):
-    user = models.ForeignKey(
+class Favorite(Model):
+    user = ForeignKey(
         User,
-        on_delete=models.CASCADE,
+        on_delete=CASCADE,
         related_name='favorites',
     )
-    recipe = models.ForeignKey(
+    recipe = ForeignKey(
         Recipe,
-        on_delete=models.CASCADE,
+        on_delete=CASCADE,
         related_name='in_favorite',
     )
 
     class Meta:
         ordering = ('user',)
         constraints = [
-            models.UniqueConstraint(
+            UniqueConstraint(
                 name='unique_recipe_in_favorite',
                 fields=('user', 'recipe'),
             ),
         ]
 
 
-class ShoppingCart(models.Model):
-    user = models.ForeignKey(
+class ShoppingCart(Model):
+    user = ForeignKey(
         User,
-        on_delete=models.CASCADE,
+        on_delete=CASCADE,
         related_name='shopping_cart',
     )
-    recipe = models.ForeignKey(
+    recipe = ForeignKey(
         Recipe,
-        on_delete=models.CASCADE,
+        on_delete=CASCADE,
         related_name='in_shopping_cart',
     )
 
     class Meta:
         ordering = ('user',)
         constraints = [
-            models.UniqueConstraint(
+            UniqueConstraint(
                 name='unique_recipe_in_cart',
                 fields=('user', 'recipe'),
             ),
