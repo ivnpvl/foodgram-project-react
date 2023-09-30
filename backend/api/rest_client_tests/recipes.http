@@ -43,7 +43,7 @@ Authorization: token {{Token}}
 }
 
 ### Delete recipe
-DELETE /api/recipes/44/
+DELETE /api/recipes/45/
 Host: {{Host}}
 Content-type: application/json
 Authorization: token {{Token}}

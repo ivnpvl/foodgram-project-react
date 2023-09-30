@@ -113,13 +113,24 @@ class RecipeSerializer(ModelSerializer):
                 amount=ingredient_data.get('amount'),
             )
         return recipe
+    
+    def update(self, instance, validated_data):
+        tags = validated_data.pop('tags')
+        ingredients = validated_data.pop('ingredient_relations')
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        # fix me: add tagsa and ingredients
+        
+
+        instance.save()
+        return instance
 
     def to_representation(self, instance):
         data = super(RecipeSerializer, self).to_representation(instance)
         data.update(tags=TagSerializer(instance.tags, many=True).data)
         ingredients = IngredientSerializer(
             instance.ingredients,
-            many=True
+            many=True,
         ).data
         ingredients.sort(key=lambda data: data.get('id'))
         initials = self.initial_data.get('ingredients')
