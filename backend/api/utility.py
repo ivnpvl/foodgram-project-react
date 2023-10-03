@@ -35,7 +35,7 @@ class ExtraEndpoints(ABC):
             pk,
             related_model,
             related_field,
-            errors=None,
+            error_messages=None,
     ):
         user = request.user
         instance = self.queryset.get(id=pk)
@@ -46,7 +46,7 @@ class ExtraEndpoints(ABC):
         if request.method == 'POST':
             if relation_exists:
                 return Response(
-                    {'errors': errors.get('already_exists')},
+                    {'errors': error_messages.get('already_exists')},
                     HTTP_400_BAD_REQUEST,
                 )
             related_model.objects.create(
@@ -54,12 +54,15 @@ class ExtraEndpoints(ABC):
                 **{related_field: instance},
             )
             return Response(
-                self.serializer_class(instance).data,
+                self.serializer_class(
+                    instance,
+                    context={'request': request},
+                ).data,
                 HTTP_201_CREATED,
             )
         if not relation_exists:
             return Response(
-                {'errors': errors.get('not_exists')},
+                {'errors': error_messages.get('not_exists')},
                 HTTP_400_BAD_REQUEST,
             )
         related_model.objects.filter(

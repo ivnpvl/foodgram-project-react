@@ -5,7 +5,7 @@
 ### GET users
 GET /api/users/
 Host: {{Host}}
-
+Authorization: token {{Token}}
 
 ### Add new user
 POST /api/users/
@@ -39,6 +39,7 @@ Content-type: application/json
 GET /api/users/1/
 Host: {{Host}}
 Content-type: application/json
+Authorization: token {{Token}}
 
 
 ### Add another user
@@ -86,6 +87,20 @@ Authorization: token {{Token}}
 
 ### Current user
 GET /api/users/me/
+Host: {{Host}}
+Content-type: application/json
+Authorization: token {{Token}}
+
+
+### Add subscribtion
+POST /api/users/1/subscribe/
+Host: {{Host}}
+Content-type: application/json
+Authorization: token {{Token}}
+
+
+### Delete subscribtion
+DELETE /api/users/1/subscribe/
 Host: {{Host}}
 Content-type: application/json
 Authorization: token {{Token}}

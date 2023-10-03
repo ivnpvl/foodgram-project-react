@@ -155,10 +155,34 @@ class RecipeSerializer(ModelSerializer):
         return data
 
 
-class AddRecipeSerializer(RecipeSerializer, ReadOnlyModelSerializer):
+class RecipeResponseSerializer(ReadOnlyModelSerializer):
 
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
 
-    to_representation = ModelSerializer.to_representation
+
+class SubscribeSerializer(ReadOnlyModelSerializer):
+    is_subscribed = SerializerMethodField()
+    recipes = RecipeResponseSerializer(many=True)
+    recipes_count = SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = (
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed',
+            'recipes',
+            'recipes_count',
+        )
+
+    def get_is_subscribed(self, author):
+        user = self.context.get('request').user
+        return bool(user.subscriptions.filter(author=author).exists())
+
+    def get_recipes_count(self, author):
+        return author.recipes.count()
