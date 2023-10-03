@@ -27,6 +27,7 @@ GET /api/recipes/
 Host: {{Host}}
 Authorization: token {{Token}}
 
+
 ### Create recipe
 POST /api/recipes/
 Host: {{Host}}
@@ -42,8 +43,42 @@ Authorization: token {{Token}}
     "cooking_time": 1
 }
 
+
+### Get recipe by id
+GET /api/recipes/46/
+Host: {{Host}}
+Authorization: token {{Token}}
+
+
+### Patch recipe
+PATCH /api/recipes/46/
+Host: {{Host}}
+Content-type: application/json
+Authorization: token {{Token}}
+
+{   
+    "tags": [2],
+    "ingredients": [{"id": 444, "amount": 8}],
+    "cooking_time": 2
+}
+
+
 ### Delete recipe
 DELETE /api/recipes/45/
+Host: {{Host}}
+Content-type: application/json
+Authorization: token {{Token}}
+
+
+### Add recipe to favorite
+POST /api/recipes/46/favorite/
+Host: {{Host}}
+Content-type: application/json
+Authorization: token {{Token}}
+
+
+### Remove recipe from favorite
+DELETE /api/recipes/46/favorite/
 Host: {{Host}}
 Content-type: application/json
 Authorization: token {{Token}}

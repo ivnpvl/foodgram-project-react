@@ -82,3 +82,10 @@ POST /api/auth/token/logout/
 Host: {{Host}}
 Content-type: application/json
 Authorization: token {{Token}}
+
+
+### Current user
+GET /api/users/me/
+Host: {{Host}}
+Content-type: application/json
+Authorization: token {{Token}}

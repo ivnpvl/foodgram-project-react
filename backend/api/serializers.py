@@ -1,5 +1,7 @@
 from django.contrib.auth import get_user_model
+from django.db.models import F
 from rest_framework.serializers import (
+    IntegerField,
     ModelSerializer,
     PrimaryKeyRelatedField,
     SerializerMethodField,
@@ -29,11 +31,11 @@ class UserSerializer(ModelSerializer):
             'password': {'write_only': True},
         }
 
-    def get_is_subscribed(self, obj):
+    def get_is_subscribed(self, author):
         user = self.context.get('request').user
         return bool(
             user.is_authenticated
-            and user.subscriptions.filter(author=obj).exists()
+            and user.subscriptions.filter(author=author).exists()
         )
 
 
@@ -42,6 +44,14 @@ class IngredientSerializer(ReadOnlyModelSerializer):
     class Meta:
         model = Ingredient
         fields = ('id', 'name', 'measurement_unit')
+
+
+class IngredientResponseSerializer(ReadOnlyModelSerializer):
+    amount = IntegerField()
+
+    class Meta:
+        model = Ingredient
+        fields = ('id', 'name', 'measurement_unit', 'amount')
 
 
 class TagSerializer(ReadOnlyModelSerializer):
@@ -85,18 +95,18 @@ class RecipeSerializer(ModelSerializer):
             'cooking_time',
         )
 
-    def get_is_favorite(self, obj):
+    def get_is_favorite(self, recipe):
         user = self.context.get('request').user
         return bool(
             user.is_authenticated
-            and user.favorites.filter(recipe=obj).exists()
+            and user.favorites.filter(recipe=recipe).exists()
         )
 
-    def get_is_in_shopping_cart(self, obj):
+    def get_is_in_shopping_cart(self, recipe):
         user = self.context.get('request').user
         return bool(
             user.is_authenticated
-            and user.shopping_cart.filter(recipe=obj).exists()
+            and user.shopping_cart.filter(recipe=recipe).exists()
         )
 
     def create(self, validated_data):
@@ -113,29 +123,42 @@ class RecipeSerializer(ModelSerializer):
                 amount=ingredient_data.get('amount'),
             )
         return recipe
-    
-    def update(self, instance, validated_data):
-        tags = validated_data.pop('tags')
-        ingredients = validated_data.pop('ingredient_relations')
+
+    def update(self, recipe, validated_data):
+        tags = validated_data.pop('tags', None)
+        ingredients = validated_data.pop('ingredient_relations', None)
         for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        # fix me: add tagsa and ingredients
-        
+            setattr(recipe, attr, value)
+        if tags:
+            RecipeTag.objects.filter(recipe=recipe).delete()
+            for tag in tags:
+                RecipeTag.objects.create(recipe=recipe, tag=tag)
+        if ingredients:
+            RecipeIngredient.objects.filter(recipe=recipe).delete()
+            for ingredient_data in ingredients:
+                RecipeIngredient.objects.create(
+                    recipe=recipe,
+                    ingredient=ingredient_data.get('id'),
+                    amount=ingredient_data.get('amount'),
+                )
+        recipe.save()
+        return recipe
 
-        instance.save()
-        return instance
-
-    def to_representation(self, instance):
-        data = super(RecipeSerializer, self).to_representation(instance)
-        data.update(tags=TagSerializer(instance.tags, many=True).data)
-        ingredients = IngredientSerializer(
-            instance.ingredients,
+    def to_representation(self, recipe):
+        data = super(RecipeSerializer, self).to_representation(recipe)
+        tags = TagSerializer(recipe.tags, many=True).data
+        ingredients = IngredientResponseSerializer(
+            recipe.ingredients.annotate(amount=F('recipe_relations__amount')),
             many=True,
         ).data
-        ingredients.sort(key=lambda data: data.get('id'))
-        initials = self.initial_data.get('ingredients')
-        initials.sort(key=lambda data: data.get('id'))
-        for ingredient, initial in zip(ingredients, initials):
-            ingredient['amount'] = initial['amount']
-        data.update(ingredients=ingredients)
+        data.update(tags=tags, ingredients=ingredients)
         return data
+
+
+class AddRecipeSerializer(RecipeSerializer, ReadOnlyModelSerializer):
+
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
+
+    to_representation = ModelSerializer.to_representation
