@@ -2,6 +2,7 @@ from abc import ABC
 from base64 import b64decode
 
 from django.core.files.base import ContentFile
+from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.serializers import ImageField, ModelSerializer
 from rest_framework.status import (
@@ -32,15 +33,14 @@ class ExtraEndpoints(ABC):
     def _add_post_delete_endpoint(
             self,
             request,
-            pk,
+            id,
             related_model,
             related_field,
             error_messages=None,
     ):
-        user = request.user
-        instance = self.queryset.get(id=pk)
+        instance = get_object_or_404(self.queryset, id=id)
         relation_exists = related_model.objects.filter(
-            user=user,
+            user=request.user,
             **{related_field: instance},
         ).exists()
         if request.method == 'POST':
@@ -49,8 +49,13 @@ class ExtraEndpoints(ABC):
                     {'errors': error_messages.get('already_exists')},
                     HTTP_400_BAD_REQUEST,
                 )
+            if request.user == instance:
+                return Response(
+                    {'errors': error_messages.get('self_following')},
+                    HTTP_400_BAD_REQUEST,
+                )
             related_model.objects.create(
-                user=user,
+                user=request.user,
                 **{related_field: instance},
             )
             return Response(
@@ -66,7 +71,7 @@ class ExtraEndpoints(ABC):
                 HTTP_400_BAD_REQUEST,
             )
         related_model.objects.filter(
-            user=user,
+            user=request.user,
             **{related_field: instance}
         ).delete()
         return Response(HTTP_204_NO_CONTENT)

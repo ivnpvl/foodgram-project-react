@@ -1,6 +1,6 @@
 @Host = localhost:8000
 @Token = d5d926ab6f25a42d1aba7efb23e3708f14cdb172
-
+@Author_token = 1ffdd24446702838cb4091c191c3323e332b1475
 
 ### GET ingredients
 GET /api/ingredients/
@@ -58,7 +58,7 @@ Authorization: token {{Token}}
 
 {   
     "tags": [2],
-    "ingredients": [{"id": 444, "amount": 8}],
+    "ingredients": [{"id": 444, "amount": 8}, {"id": 38, "amount": 7}],
     "cooking_time": 2
 }
 
@@ -66,19 +66,49 @@ Authorization: token {{Token}}
 ### Delete recipe
 DELETE /api/recipes/45/
 Host: {{Host}}
-Content-type: application/json
 Authorization: token {{Token}}
 
 
 ### Add recipe to favorite
 POST /api/recipes/46/favorite/
 Host: {{Host}}
-Content-type: application/json
 Authorization: token {{Token}}
 
 
 ### Remove recipe from favorite
 DELETE /api/recipes/46/favorite/
 Host: {{Host}}
-Content-type: application/json
 Authorization: token {{Token}}
+
+
+### Add recipe to shopping cart
+POST /api/recipes/49/shopping_cart/
+Host: {{Host}}
+Authorization: token {{Token}}
+
+
+### Remove recipe from shopping cart
+DELETE /api/recipes/46/shopping_cart/
+Host: {{Host}}
+Authorization: token {{Token}}
+
+
+### Download shopping cart
+GET /api/recipes/download_shopping_cart/
+Host: {{Host}}
+Authorization: token {{Token}}
+
+### Create recipe by Vasya
+POST /api/recipes/
+Host: {{Host}}
+Content-type: application/json
+Authorization: token {{Author_token}}
+
+{
+    "ingredients": [{"id": 22, "amount": 10}, {"id": 12, "amount": 4}],
+    "tags": [1],
+    "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABieywaAAAACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==",
+    "name": "test_vasya_2",
+    "text": "test_recipe",
+    "cooking_time": 4
+}

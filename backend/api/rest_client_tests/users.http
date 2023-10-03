@@ -66,6 +66,17 @@ Content-type: application/json
 }
 
 
+### Obtain Vasya token
+POST /api/auth/token/login/
+Host: {{Host}}
+Content-type: application/json
+
+{
+    "password": "Qwerty123f",
+    "email": "vpupkin@yandex.ru"    
+}
+
+
 ### Change password
 POST /api/users/set_password/
 Host: {{Host}}
@@ -93,14 +104,18 @@ Authorization: token {{Token}}
 
 
 ### Add subscribtion
-POST /api/users/1/subscribe/
+POST /api/users/3/subscribe/
 Host: {{Host}}
-Content-type: application/json
 Authorization: token {{Token}}
 
 
 ### Delete subscribtion
-DELETE /api/users/1/subscribe/
+DELETE /api/users/3/subscribe/
 Host: {{Host}}
-Content-type: application/json
+Authorization: token {{Token}}
+
+
+### Get all subscriptions
+GET /api/users/subscriptions/
+Host: {{Host}}
 Authorization: token {{Token}}
