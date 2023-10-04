@@ -3,6 +3,7 @@ from django.db.models import F
 from djoser.views import UserViewSet
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
+from rest_framework.filters import SearchFilter
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
@@ -10,6 +11,7 @@ from rest_framework.viewsets import ModelViewSet
 
 from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from users.models import Subscription
+from .filters import RecipeFilterSet
 from .mixins import RetriveListViewSet
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (
@@ -65,6 +67,8 @@ class IngredientViewSet(RetriveListViewSet):
     serializer_class = IngredientSerializer
     permission_classes = (AllowAny,)
     pagination_class = None
+    filter_backends = (SearchFilter,)
+    search_fields = ('name',)
 
 
 class TagViewSet(RetriveListViewSet):
@@ -78,8 +82,9 @@ class RecipeViewSet(ModelViewSet, ExtraEndpoints):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = (IsAuthorOrReadOnly,)
-    filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('tags',)
+    filter_backends = (DjangoFilterBackend, SearchFilter)
+    filterset_class = RecipeFilterSet
+    search_fields = ('name',)
 
     @action(
         detail=True,
