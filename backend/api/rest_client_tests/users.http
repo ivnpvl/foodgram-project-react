@@ -104,13 +104,13 @@ Authorization: token {{Token}}
 
 
 ### Add subscribtion
-POST /api/users/3/subscribe/
+POST /api/users/2/subscribe/
 Host: {{Host}}
 Authorization: token {{Token}}
 
 
 ### Delete subscribtion
-DELETE /api/users/3/subscribe/
+DELETE /api/users/2/subscribe/
 Host: {{Host}}
 Authorization: token {{Token}}
 

@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db.models import F
+from rest_framework.exceptions import ValidationError
 from rest_framework.serializers import (
     IntegerField,
     ModelSerializer,
@@ -100,6 +101,22 @@ class RecipeSerializer(ModelSerializer):
             'cooking_time',
         )
 
+    def validate_tags(self, value):
+        if len(value) != len(set(value)):
+            raise ValidationError(
+                {'tags': 'Запрещено передавать повторяющиеся тэги.'}
+            )
+        return value
+
+    def validate_ingredients(self, value):
+        ingredient_ids = [ingredient.get('id') for ingredient in value]
+        if len(ingredient_ids) != len(set(ingredient_ids)):
+            raise ValidationError(
+                {'ingredients':
+                    'Запрещено передавать повторяющиеся ингредиенты.'}
+            )
+        return value
+
     def get_is_favorited(self, recipe):
         user = self.context.get('request').user
         return bool(
@@ -131,21 +148,28 @@ class RecipeSerializer(ModelSerializer):
 
     def update(self, recipe, validated_data):
         tags = validated_data.pop('tags', None)
+        if not tags:
+            raise ValidationError(
+                {'tags': 'Нельзя обновить рецепт без указания тэгов.'}
+            )
         ingredients = validated_data.pop('ingredient_relations', None)
+        if not ingredients:
+            raise ValidationError(
+                {'ingredients':
+                    'Нельзя обновить рецепт без указания ингредиентов.'}
+            )
         for attr, value in validated_data.items():
             setattr(recipe, attr, value)
-        if tags:
-            RecipeTag.objects.filter(recipe=recipe).delete()
-            for tag in tags:
-                RecipeTag.objects.create(recipe=recipe, tag=tag)
-        if ingredients:
-            RecipeIngredient.objects.filter(recipe=recipe).delete()
-            for ingredient_data in ingredients:
-                RecipeIngredient.objects.create(
-                    recipe=recipe,
-                    ingredient=ingredient_data.get('id'),
-                    amount=ingredient_data.get('amount'),
-                )
+        RecipeTag.objects.filter(recipe=recipe).delete()
+        for tag in tags:
+            RecipeTag.objects.create(recipe=recipe, tag=tag)
+        RecipeIngredient.objects.filter(recipe=recipe).delete()
+        for ingredient_data in ingredients:
+            RecipeIngredient.objects.create(
+                recipe=recipe,
+                ingredient=ingredient_data.get('id'),
+                amount=ingredient_data.get('amount'),
+            )
         recipe.save()
         return recipe
 

@@ -52,14 +52,20 @@ class CustomUserViewSet(UserViewSet, ExtraEndpoints):
     @action(detail=False, methods=['GET'])
     def subscriptions(self, request):
         subscriptions = User.objects.filter(subscribers__user=request.user)
-        return Response(
-            SubscribeSerializer(
-                subscriptions,
+        page = self.paginate_queryset(subscriptions)
+        if page is not None:
+            serializer = SubscribeSerializer(
+                page,
                 context={'request': request},
                 many=True,
-            ).data,
-            HTTP_200_OK,
+            )
+            return self.get_paginated_response(serializer.data)
+        serializer = SubscribeSerializer(
+            subscriptions,
+            context={'request': request},
+            many=True,
         )
+        return Response(serializer.data, HTTP_200_OK)
 
 
 class IngredientViewSet(RetriveListViewSet):
@@ -99,6 +105,7 @@ class RecipeViewSet(ModelViewSet, ExtraEndpoints):
             related_field='recipe',
             error_messages={
                 'object_not_exists_400': 'Рецепта нет в базе, проверьте id.',
+                'object_not_exists_404': 'Рецепта нет в базе, проверьте id.',
                 'relation_exists': 'Данный рецепт уже добавлен в избранное.',
                 'relation_not_exists':
                     'Данного рецепта нет в списке избранного.',
@@ -118,6 +125,7 @@ class RecipeViewSet(ModelViewSet, ExtraEndpoints):
             related_field='recipe',
             error_messages={
                 'object_not_exists_400': 'Рецепта нет в базе, проверьте id.',
+                'object_not_exists_404': 'Рецепта нет в базе, проверьте id.',
                 'relation_exists': 'Данный рецепт уже добавлен в корзину.',
                 'relation_not_exists': 'Данного рецепта нет в корзине.',
             },

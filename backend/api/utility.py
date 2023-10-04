@@ -42,7 +42,10 @@ class ExtraEndpoints(ABC):
         try:
             instance = self.queryset.get(id=id)
         except ObjectDoesNotExist:
-            if error_messages.get('object_not_exists_400'):
+            if (
+                request.method == 'POST'
+                and error_messages.get('object_not_exists_400')
+            ):
                 return Response(
                     {'errors': error_messages.get('object_not_exists_400')},
                     HTTP_400_BAD_REQUEST,
@@ -51,7 +54,6 @@ class ExtraEndpoints(ABC):
                 {'errors': error_messages.get('object_not_exists_404')},
                 HTTP_404_NOT_FOUND,
             )
-
         relation_exists = related_model.objects.filter(
             user=request.user,
             **{related_field: instance},
@@ -88,6 +90,6 @@ class ExtraEndpoints(ABC):
             **{related_field: instance}
         ).delete()
         return Response(
-            self.serializer_class(instance).data,
+            self.serializer_class(instance, context={'request': request}).data,
             HTTP_204_NO_CONTENT,
         )
