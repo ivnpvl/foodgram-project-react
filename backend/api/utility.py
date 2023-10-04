@@ -1,14 +1,15 @@
 from abc import ABC
 from base64 import b64decode
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.base import ContentFile
-from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.serializers import ImageField, ModelSerializer
 from rest_framework.status import (
     HTTP_201_CREATED,
     HTTP_204_NO_CONTENT,
     HTTP_400_BAD_REQUEST,
+    HTTP_404_NOT_FOUND,
 )
 
 
@@ -38,7 +39,19 @@ class ExtraEndpoints(ABC):
             related_field,
             error_messages=None,
     ):
-        instance = get_object_or_404(self.queryset, id=id)
+        try:
+            instance = self.queryset.get(id=id)
+        except ObjectDoesNotExist:
+            if error_messages.get('object_not_exists_400'):
+                return Response(
+                    {'errors': error_messages.get('object_not_exists_400')},
+                    HTTP_400_BAD_REQUEST,
+                )
+            return Response(
+                {'errors': error_messages.get('object_not_exists_404')},
+                HTTP_404_NOT_FOUND,
+            )
+
         relation_exists = related_model.objects.filter(
             user=request.user,
             **{related_field: instance},
@@ -46,7 +59,7 @@ class ExtraEndpoints(ABC):
         if request.method == 'POST':
             if relation_exists:
                 return Response(
-                    {'errors': error_messages.get('already_exists')},
+                    {'errors': error_messages.get('relation_exists')},
                     HTTP_400_BAD_REQUEST,
                 )
             if request.user == instance:
@@ -67,11 +80,14 @@ class ExtraEndpoints(ABC):
             )
         if not relation_exists:
             return Response(
-                {'errors': error_messages.get('not_exists')},
+                {'errors': error_messages.get('relation_not_exists')},
                 HTTP_400_BAD_REQUEST,
             )
         related_model.objects.filter(
             user=request.user,
             **{related_field: instance}
         ).delete()
-        return Response(HTTP_204_NO_CONTENT)
+        return Response(
+            self.serializer_class(instance).data,
+            HTTP_204_NO_CONTENT,
+        )

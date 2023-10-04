@@ -76,7 +76,7 @@ class RecipeSerializer(ModelSerializer):
         source='ingredient_relations',
         many=True,
     )
-    is_favorite = SerializerMethodField()
+    is_favorited = SerializerMethodField()
     is_in_shopping_cart = SerializerMethodField()
     image = Base64ImageField()
 
@@ -87,7 +87,7 @@ class RecipeSerializer(ModelSerializer):
             'tags',
             'author',
             'ingredients',
-            'is_favorite',
+            'is_favorited',
             'is_in_shopping_cart',
             'name',
             'image',
@@ -95,7 +95,7 @@ class RecipeSerializer(ModelSerializer):
             'cooking_time',
         )
 
-    def get_is_favorite(self, recipe):
+    def get_is_favorited(self, recipe):
         user = self.context.get('request').user
         return bool(
             user.is_authenticated
