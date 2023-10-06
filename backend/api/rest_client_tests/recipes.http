@@ -40,10 +40,10 @@ Content-type: application/json
 Authorization: token {{Token}}
 
 {
-    "ingredients": [{"id": 667, "amount": 3}, {"id": 1123, "amount": 0}],
+    "ingredients": [{"id": 667, "amount": 3}, {"id": 1123, "amount": 7}],
     "tags": [1, 2],
     "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABieywaAAAACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==",
-    "name": "test_n_4",
+    "name": "test_1",
     "text": "test_recipe",
     "cooking_time": 1
 }
@@ -69,7 +69,7 @@ Authorization: token {{Token}}
 
 
 ### Delete recipe
-DELETE /api/recipes/112/
+DELETE /api/recipes/1/
 Host: {{Host}}
 Authorization: token {{Token}}
 

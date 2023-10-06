@@ -38,14 +38,13 @@ Content-type: application/json
 ### Get user with id=1
 GET /api/users/1/
 Host: {{Host}}
-Content-type: application/json
 Authorization: token {{Token}}
 
 
 ### Get current user
 GET /api/users/me/
 Host: {{Host}}
-Content-type: application/json
+Authorization: token {{Token}}
 
 
 ### Add another user
