@@ -42,6 +42,12 @@ Content-type: application/json
 Authorization: token {{Token}}
 
 
+### Get current user
+GET /api/users/me/
+Host: {{Host}}
+Content-type: application/json
+
+
 ### Add another user
 POST /api/users/
 Host: {{Host}}

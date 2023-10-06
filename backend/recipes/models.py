@@ -106,6 +106,10 @@ class Recipe(Model):
     def __str__(self):
         return self.name
 
+    def delete(self, using=None, keep_parents=False):
+        self.image.storage.delete(self.image.name)
+        super().delete()
+
 
 class RecipeIngredient(Model):
     recipe = ForeignKey(

@@ -8,7 +8,7 @@ from rest_framework.serializers import (
     SerializerMethodField,
 )
 from recipes.models import Ingredient, Recipe, RecipeIngredient, RecipeTag, Tag
-from .utility import Base64ImageField, ReadOnlyModelSerializer
+from .utils import Base64ImageField, ReadOnlyModelSerializer
 
 User = get_user_model()
 
@@ -150,13 +150,13 @@ class RecipeSerializer(ModelSerializer):
         tags = validated_data.pop('tags', None)
         if not tags:
             raise ValidationError(
-                {'tags': 'Нельзя обновить рецепт без указания тэгов.'}
+                {'tags': 'Нельзя обновить рецепт без указания тэгов.'},
             )
         ingredients = validated_data.pop('ingredient_relations', None)
         if not ingredients:
             raise ValidationError(
                 {'ingredients':
-                    'Нельзя обновить рецепт без указания ингредиентов.'}
+                    'Нельзя обновить рецепт без указания ингредиентов.'},
             )
         for attr, value in validated_data.items():
             setattr(recipe, attr, value)

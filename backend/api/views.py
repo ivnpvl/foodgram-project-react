@@ -3,15 +3,14 @@ from django.db.models import F
 from djoser.views import UserViewSet
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
-from rest_framework.filters import SearchFilter
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
 from rest_framework.viewsets import ModelViewSet
 
 from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from users.models import Subscription
-from .filters import RecipeFilterSet
+from .filters import IngredientFilterSet, RecipeFilterSet
 from .mixins import RetriveListViewSet
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (
@@ -22,12 +21,17 @@ from .serializers import (
     SubscribeSerializer,
     TagSerializer,
 )
-from .utility import ExtraEndpoints
+from .utils import ExtraEndpoints
 
 User = get_user_model()
 
 
 class CustomUserViewSet(UserViewSet, ExtraEndpoints):
+    def get_permissions(self):
+        if self.action == 'me':
+            self.permission_classes = (IsAuthenticated,)
+        return super().get_permissions()
+
     @action(
         detail=True,
         methods=['POST', 'DELETE'],
@@ -73,8 +77,8 @@ class IngredientViewSet(RetriveListViewSet):
     serializer_class = IngredientSerializer
     permission_classes = (AllowAny,)
     pagination_class = None
-    filter_backends = (SearchFilter,)
-    search_fields = ('name',)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = IngredientFilterSet
 
 
 class TagViewSet(RetriveListViewSet):
@@ -88,9 +92,8 @@ class RecipeViewSet(ModelViewSet, ExtraEndpoints):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = (IsAuthorOrReadOnly,)
-    filter_backends = (DjangoFilterBackend, SearchFilter)
+    filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilterSet
-    search_fields = ('name',)
 
     @action(
         detail=True,

@@ -1,17 +1,27 @@
 from django.contrib.auth import get_user_model
 from django_filters.rest_framework import (
     BooleanFilter,
+    CharFilter,
     ModelChoiceFilter,
     ModelMultipleChoiceFilter,
     FilterSet,
 )
 
-from recipes.models import Recipe, Tag
+from recipes.models import Ingredient, Recipe, Tag
 
 User = get_user_model()
 
 
+class IngredientFilterSet(FilterSet):
+    name = CharFilter(lookup_expr='istartswith')
+
+    class Meta:
+        model = Ingredient
+        fields = ('name',)
+
+
 class RecipeFilterSet(FilterSet):
+    name = CharFilter(lookup_expr='istartswith')
     author = ModelChoiceFilter(queryset=User.objects.all())
     tags = ModelMultipleChoiceFilter(
         queryset=Tag.objects.all(),
@@ -23,7 +33,13 @@ class RecipeFilterSet(FilterSet):
 
     class Meta:
         model = Recipe
-        fields = ('author', 'tags', 'is_favorited', 'is_in_shopping_cart')
+        fields = (
+            'name',
+            'author',
+            'tags',
+            'is_favorited',
+            'is_in_shopping_cart',
+        )
 
     def filter_is_favorited(self, queryset, name, value):
         if self.request.user.is_authenticated:
