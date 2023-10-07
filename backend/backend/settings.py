@@ -9,6 +9,8 @@ DEBUG = False
 
 ALLOWED_HOSTS = getenv('DJANGO_ALLOWED_HOSTS', '*').split()
 
+CSRF_TRUSTED_ORIGINS = [getenv('DJANGO_CSRF_TRUSTED_ORIGINS', '')]
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
