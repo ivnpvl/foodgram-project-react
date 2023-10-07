@@ -5,7 +5,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = getenv('DJANGO_SECRET_KEY', 'django_secret_key')
 
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = getenv('DJANGO_ALLOWED_HOSTS', '*').split()
 
@@ -69,7 +69,7 @@ else:
             'NAME': getenv('POSTGRES_DB', 'django'),
             'USER': getenv('POSTGRES_USER', 'django'),
             'PASSWORD': getenv('POSTGRES_PASSWORD', 'django'),
-            'HOST': getenv('DB_HOST', '127.0.0.1'),
+            'HOST': getenv('DB_HOST', ''),
             'PORT': getenv('DB_PORT', 5432),
         }
     }

@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db.models import F
+from django.http.response import HttpResponse
 from djoser.views import UserViewSet
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
@@ -151,8 +152,12 @@ class RecipeViewSet(ModelViewSet, ExtraEndpoints):
                     f'({ingredient["measurement_unit"]})'
                 )
                 data[name] = data.setdefault(name, 0) + ingredient['amount']
-        with open('shopping_cart.txt', 'w') as file:
-            file.write('Список покупок: \n\n')
-            for name, amount in data.items():
-                file.write(f'{name} - {amount}\n')
-        return Response(data)
+        file_data = 'Список покупок:\n' + ',\n'.join(
+            f'{name} - {amount}' for name, amount in data.items()
+        )
+        file = HttpResponse(
+            file_data,
+            content_type='text.txt; charset=utf-8',
+        )
+        file["Content-Disposition"] = 'attachment; filename=shopping_cart.txt'
+        return file
