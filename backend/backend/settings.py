@@ -1,23 +1,13 @@
 from os import getenv
 from pathlib import Path
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+SECRET_KEY = getenv('DJANGO_SECRET_KEY', 'django_secret_key')
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-!6gv-l=xz#%h===n-c*cd&*d%9a-kpp36yl%!4&m#3qzhg_%b_'
-
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
-
-
-# Application definition
+ALLOWED_HOSTS = getenv('DJANGO_ALLOWED_HOSTS', '*').split()
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -65,10 +55,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
 if DEBUG:
     DATABASES = {
         'default': {
@@ -82,18 +68,13 @@ else:
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': getenv('POSTGRES_DB', 'django'),
             'USER': getenv('POSTGRES_USER', 'django'),
-            'PASSWORD': getenv('POSTGRES_PASSWORD', ''),
-            'HOST': getenv('DB_HOST', ''),
+            'PASSWORD': getenv('POSTGRES_PASSWORD', 'django'),
+            'HOST': getenv('DB_HOST', '127.0.0.1'),
             'PORT': getenv('DB_PORT', 5432),
         }
     }
 
-
 AUTH_USER_MODEL = 'users.CustomUser'
-
-
-# Password validation
-# https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -110,10 +91,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
-# Internationalization
-# https://docs.djangoproject.com/en/4.2/topics/i18n/
-
 LANGUAGE_CODE = 'ru-ru'
 
 TIME_ZONE = 'Europe/Moscow'
@@ -122,24 +99,13 @@ USE_I18N = True
 
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.2/howto/static-files/
-
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'collected_static'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-
-# Rest framework settings
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
