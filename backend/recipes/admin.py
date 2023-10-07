@@ -1,5 +1,5 @@
-from django.contrib.admin import ModelAdmin, display, register
-from .models import Ingredient, Recipe, Tag
+from django.contrib.admin import ModelAdmin, TabularInline, display, register
+from .models import Ingredient, Recipe, RecipeIngredient, RecipeTag, Tag
 
 
 @register(Ingredient)
@@ -16,26 +16,38 @@ class TagAdmin(ModelAdmin):
     search_fields = ('name',)
 
 
+class RecipeIngredientInline(TabularInline):
+    model = RecipeIngredient
+    extra = 1
+    verbose_name = 'Ингредиент'
+    verbose_name_plural = 'Ингредиенты'
+
+
+class TagIngredientInline(TabularInline):
+    model = RecipeTag
+    extra = 1
+    verbose_name = 'Тэг'
+    verbose_name_plural = 'Тэги'
+
+
 @register(Recipe)
 class RecipeAdmin(ModelAdmin):
     list_display = (
         'name',
+        'text',
         'author',
         'pub_date',
         'get_tags',
         'get_ingredients',
         'in_favorite',
     )
-    list_filter = ('pub_date', 'author', 'name', 'tags')
+    inlines = (RecipeIngredientInline, TagIngredientInline)
+    list_filter = ('name', 'author', 'tags')
     search_fields = ('name',)
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
         return queryset.prefetch_related('tags', 'ingredients')
-
-    @display(description='Тэги')
-    def get_tags(self, recipe):
-        return ", ".join([str(tag) for tag in recipe.tags.all()])
 
     @display(description='Ингредиенты')
     def get_ingredients(self, recipe):
@@ -43,6 +55,10 @@ class RecipeAdmin(ModelAdmin):
             [str(ingredient) for ingredient in recipe.ingredients.all()]
         )
 
-    @display(description='Число добалений в избранное')
+    @display(description='Тэги')
+    def get_tags(self, recipe):
+        return ", ".join([str(tag) for tag in recipe.tags.all()])
+
+    @display(description='Число добавлений в избранное')
     def in_favorite(self, obj):
         return obj.in_favorite.all().count()

@@ -77,7 +77,7 @@ class Recipe(Model):
         unique=True,
     )
     image = ImageField(
-        verbose_name='Картинка, закодированная в Base64',
+        verbose_name='Фотография готового блюда',
         upload_to='media/',
     )
     text = TextField(verbose_name='Описание')
