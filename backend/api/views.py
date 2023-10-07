@@ -155,9 +155,7 @@ class RecipeViewSet(ModelViewSet, ExtraEndpoints):
         file_data = 'Список покупок:\n' + ',\n'.join(
             f'{name} - {amount}' for name, amount in data.items()
         )
-        file = HttpResponse(
-            file_data,
-            content_type='text.txt; charset=utf-8',
-        )
-        file["Content-Disposition"] = 'attachment; filename=shopping_cart.txt'
-        return file
+        filename = 'shopping_list.txt'
+        response = HttpResponse(file_data, content_type='text/plain')
+        response["Content-Disposition"] = f'attachment; filename={filename}'
+        return response
