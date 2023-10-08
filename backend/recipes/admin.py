@@ -43,7 +43,7 @@ class RecipeAdmin(ModelAdmin):
     )
     inlines = (RecipeIngredientInline, TagIngredientInline)
     list_filter = ('name', 'author', 'tags')
-    search_fields = ('name',)
+    search_fields = ('-pub_date',)
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
