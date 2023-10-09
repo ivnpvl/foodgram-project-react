@@ -12,22 +12,33 @@ from django.db.models import (
     F,
 )
 
+from backend.constants import MAX_LENGTH_EMAIL, MAX_LENGTH_USER_INFO
+
 
 class CustomUser(AbstractUser):
     email = EmailField(
         verbose_name='Адрес электронной почты',
-        max_length=254,
+        max_length=MAX_LENGTH_EMAIL,
         unique=True,
     )
     username = CharField(
         verbose_name='Уникальный юзернэйм',
-        max_length=150,
-        validators=[UnicodeUsernameValidator],
+        max_length=MAX_LENGTH_USER_INFO,
+        validators=(UnicodeUsernameValidator,),
         unique=True,
     )
-    first_name = CharField(verbose_name='Имя', max_length=150)
-    last_name = CharField(verbose_name='Фамилия', max_length=150)
-    password = CharField(verbose_name='Пароль', max_length=150)
+    first_name = CharField(
+        verbose_name='Имя',
+        max_length=MAX_LENGTH_USER_INFO,
+    )
+    last_name = CharField(
+        verbose_name='Фамилия',
+        max_length=MAX_LENGTH_USER_INFO,
+    )
+    password = CharField(
+        verbose_name='Пароль',
+        max_length=MAX_LENGTH_USER_INFO,
+    )
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ('username', 'first_name', 'last_name')
 
@@ -54,7 +65,7 @@ class Subscription(Model):
 
     class Meta:
         ordering = ('user',)
-        constraints = [
+        constraints = (
             UniqueConstraint(
                 name='unique_subscription',
                 fields=('user', 'author'),
@@ -63,7 +74,7 @@ class Subscription(Model):
                 name='prevent_self_follow',
                 check=~Q(user=F('author')),
             ),
-        ]
+        )
 
     def __str__(self):
         return f'{self.user} подписан на {self.author}'

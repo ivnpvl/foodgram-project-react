@@ -1,15 +1,12 @@
-from django.contrib.auth import get_user_model
 from django_filters.rest_framework import (
+    AllValuesMultipleFilter,
     BooleanFilter,
     CharFilter,
-    ModelChoiceFilter,
     ModelMultipleChoiceFilter,
     FilterSet,
 )
 
-from recipes.models import Ingredient, Recipe, Tag
-
-User = get_user_model()
+from recipes.models import Ingredient, Recipe, Tag, User
 
 
 class IngredientFilterSet(FilterSet):
@@ -22,7 +19,7 @@ class IngredientFilterSet(FilterSet):
 
 class RecipeFilterSet(FilterSet):
     name = CharFilter(lookup_expr='istartswith')
-    author = ModelChoiceFilter(queryset=User.objects.all())
+    author = AllValuesMultipleFilter(queryset=User.objects.all())
     tags = ModelMultipleChoiceFilter(
         queryset=Tag.objects.all(),
         field_name='tags__slug',

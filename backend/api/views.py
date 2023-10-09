@@ -1,5 +1,4 @@
-from django.contrib.auth import get_user_model
-from django.db.models import F
+from django.db.models import F, Sum
 from django.http.response import HttpResponse
 from djoser.views import UserViewSet
 from django_filters.rest_framework import DjangoFilterBackend
@@ -9,7 +8,14 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
 from rest_framework.viewsets import ModelViewSet
 
-from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
+from recipes.models import (
+    Favorite,
+    Ingredient,
+    Recipe,
+    ShoppingCart,
+    Tag,
+    User,
+)
 from users.models import Subscription
 from .filters import IngredientFilterSet, RecipeFilterSet
 from .mixins import RetriveListViewSet
@@ -23,8 +29,6 @@ from .serializers import (
     TagSerializer,
 )
 from .utils import ExtraEndpoints
-
-User = get_user_model()
 
 
 class CustomUserViewSet(UserViewSet, ExtraEndpoints):
@@ -137,25 +141,18 @@ class RecipeViewSet(ModelViewSet, ExtraEndpoints):
 
     @action(detail=False, methods=['GET'])
     def download_shopping_cart(self, request):
-        data = {}
-        recipes = Recipe.objects.filter(in_shopping_cart__user=request.user)
-        for recipe in recipes:
-            ingredients = IngredientResponseSerializer(
-                recipe.ingredients.annotate(
-                    amount=F('recipe_relations__amount')
-                ),
-                many=True,
-            ).data
-            for ingredient in ingredients:
-                name = (
-                    f'{ingredient["name"].capitalize()} '
-                    f'({ingredient["measurement_unit"]})'
-                )
-                data[name] = data.setdefault(name, 0) + ingredient['amount']
+
+        ingredients = Ingredient.objects.filter(
+            recipes__in_shopping_cart__user=request.user
+        ).values(
+            'name',
+            'measurement_unit',
+        ).annotate(total_amount=Sum('recipe_relations__amount'))
+        template = '{name} ({measurement_unit}) - {total_amount}'
         file_data = 'Список покупок:\n' + ',\n'.join(
-            f'{name} - {amount}' for name, amount in data.items()
+            template.format(**ingredient) for ingredient in ingredients
         )
         filename = 'shopping_list.txt'
         response = HttpResponse(file_data, content_type='text/plain')
-        response["Content-Disposition"] = f'attachment; filename={filename}'
+        response['Content-Disposition'] = f'attachment; filename={filename}'
         return response

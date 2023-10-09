@@ -1,5 +1,6 @@
-from django.contrib.auth import get_user_model
 from django.db.models import F
+from django.db.transaction import atomic
+from drf_extra_fields.fields import Base64ImageField
 from rest_framework.exceptions import ValidationError
 from rest_framework.serializers import (
     IntegerField,
@@ -7,10 +8,18 @@ from rest_framework.serializers import (
     PrimaryKeyRelatedField,
     SerializerMethodField,
 )
-from recipes.models import Ingredient, Recipe, RecipeIngredient, RecipeTag, Tag
-from .utils import Base64ImageField, ReadOnlyModelSerializer
-
-User = get_user_model()
+from recipes.models import (
+    Ingredient,
+    Recipe,
+    RecipeIngredient,
+    Tag,
+    User,
+)
+from .utils import (
+    ReadOnlyModelSerializer,
+    add_tags_ingredients,
+    remove_tags_ingredients,
+)
 
 
 class UserSerializer(ModelSerializer):
@@ -34,7 +43,7 @@ class UserSerializer(ModelSerializer):
 
     def get_is_subscribed(self, author):
         user = self.context.get('request').user
-        return bool(
+        return (
             user.is_authenticated
             and user.subscriptions.filter(author=author).exists()
         )
@@ -119,57 +128,35 @@ class RecipeSerializer(ModelSerializer):
 
     def get_is_favorited(self, recipe):
         user = self.context.get('request').user
-        return bool(
+        return (
             user.is_authenticated
             and user.favorites.filter(recipe=recipe).exists()
         )
 
     def get_is_in_shopping_cart(self, recipe):
         user = self.context.get('request').user
-        return bool(
+        return (
             user.is_authenticated
             and user.shopping_cart.filter(recipe=recipe).exists()
         )
 
+    @atomic
     def create(self, validated_data):
         user = self.context.get('request').user
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredient_relations')
         recipe = Recipe.objects.create(**validated_data, author=user)
-        for tag in tags:
-            RecipeTag.objects.create(recipe=recipe, tag=tag)
-        for ingredient_data in ingredients:
-            RecipeIngredient.objects.create(
-                recipe=recipe,
-                ingredient=ingredient_data.get('id'),
-                amount=ingredient_data.get('amount'),
-            )
+        add_tags_ingredients(recipe=recipe, tags=tags, ingredients=ingredients)
         return recipe
 
+    @atomic
     def update(self, recipe, validated_data):
-        tags = validated_data.pop('tags', None)
-        if not tags:
-            raise ValidationError(
-                {'tags': 'Нельзя обновить рецепт без указания тэгов.'},
-            )
-        ingredients = validated_data.pop('ingredient_relations', None)
-        if not ingredients:
-            raise ValidationError(
-                {'ingredients':
-                    'Нельзя обновить рецепт без указания ингредиентов.'},
-            )
+        tags = validated_data.pop('tags')
+        ingredients = validated_data.pop('ingredient_relations')
         for attr, value in validated_data.items():
             setattr(recipe, attr, value)
-        RecipeTag.objects.filter(recipe=recipe).delete()
-        for tag in tags:
-            RecipeTag.objects.create(recipe=recipe, tag=tag)
-        RecipeIngredient.objects.filter(recipe=recipe).delete()
-        for ingredient_data in ingredients:
-            RecipeIngredient.objects.create(
-                recipe=recipe,
-                ingredient=ingredient_data.get('id'),
-                amount=ingredient_data.get('amount'),
-            )
+        remove_tags_ingredients(recipe=recipe)
+        add_tags_ingredients(recipe=recipe, tags=tags, ingredients=ingredients)
         recipe.save()
         return recipe
 
@@ -211,7 +198,7 @@ class SubscribeSerializer(ReadOnlyModelSerializer):
 
     def get_is_subscribed(self, author):
         user = self.context.get('request').user
-        return bool(user.subscriptions.filter(author=author).exists())
+        return user.subscriptions.filter(author=author).exists()
 
     def get_recipes_count(self, author):
         return author.recipes.count()

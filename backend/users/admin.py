@@ -1,7 +1,6 @@
 from django.contrib.admin import ModelAdmin, register
-from django.contrib.auth import get_user_model
 
-User = get_user_model()
+from recipes.models import User
 
 
 @register(User)

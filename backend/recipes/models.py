@@ -1,3 +1,4 @@
+from colorfield.fields import ColorField
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db.models import (
@@ -14,20 +15,25 @@ from django.db.models import (
     UniqueConstraint,
 )
 
+from backend.constants import MAX_LENGTH_FOOD_INFO, MINUTES_IN_DAY, MIN_UNIT
+
 User = get_user_model()
 
 
 class Ingredient(Model):
-    name = CharField(verbose_name='Название', max_length=200)
+    name = CharField(
+        verbose_name='Название',
+        max_length=MAX_LENGTH_FOOD_INFO,
+    )
     measurement_unit = CharField(
         verbose_name='Единицы измерения',
-        max_length=200,
+        max_length=MAX_LENGTH_FOOD_INFO,
     )
 
     class Meta:
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
-        ordering = ['name']
+        ordering = ('name',)
 
     def __str__(self):
         return self.name
@@ -36,24 +42,20 @@ class Ingredient(Model):
 class Tag(Model):
     name = CharField(
         verbose_name='Название',
-        max_length=200,
+        max_length=MAX_LENGTH_FOOD_INFO,
         unique=True,
     )
-    color = CharField(
-        verbose_name='Цвет в HEX',
-        max_length=7,
-        unique=True,
-    )
+    color = ColorField(verbose_name='Цвет в HEX')
     slug = SlugField(
         verbose_name='Уникальный слаг',
-        max_length=200,
+        max_length=MAX_LENGTH_FOOD_INFO,
         unique=True,
     )
 
     class Meta:
         verbose_name = 'Тэг'
         verbose_name_plural = 'Тэги'
-        ordering = ['name']
+        ordering = ('name',)
 
     def __str__(self):
         return self.name
@@ -73,7 +75,7 @@ class Recipe(Model):
     )
     name = CharField(
         verbose_name='Название',
-        max_length=200,
+        max_length=MAX_LENGTH_FOOD_INFO,
         unique=True,
     )
     image = ImageField(
@@ -95,13 +97,22 @@ class Recipe(Model):
     )
     cooking_time = PositiveSmallIntegerField(
         verbose_name='Время приготовления в минутах',
-        validators=[MaxValueValidator(1440), MinValueValidator(1)],
+        validators=(
+            MinValueValidator(
+                MIN_UNIT,
+                message='Приготовление пищи требует времени.',
+            ),
+            MaxValueValidator(
+                MINUTES_IN_DAY,
+                message='Нельзя тратить на готовку весь день.',
+            ),
+        ),
     )
 
     class Meta:
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
-        ordering = ['name']
+        ordering = ('-pub_date',)
 
     def __str__(self):
         return self.name
@@ -126,17 +137,22 @@ class RecipeIngredient(Model):
     )
     amount = PositiveSmallIntegerField(
         verbose_name='Количество',
-        validators=[MinValueValidator(1)],
+        validators=(
+            MinValueValidator(
+                MIN_UNIT,
+                message='Необходимо добавить хоть немного ингредиента.',
+            ),
+        ),
     )
 
     class Meta:
         ordering = ('recipe',)
-        constraints = [
+        constraints = (
             UniqueConstraint(
                 name='unique_ingredient_in_recipe',
                 fields=('recipe', 'ingredient'),
             ),
-        ]
+        )
 
 
 class RecipeTag(Model):
@@ -155,12 +171,12 @@ class RecipeTag(Model):
 
     class Meta:
         ordering = ('recipe',)
-        constraints = [
+        constraints = (
             UniqueConstraint(
                 name='unique_tag_on_recipe',
                 fields=('recipe', 'tag'),
             ),
-        ]
+        )
 
 
 class Favorite(Model):
@@ -177,12 +193,12 @@ class Favorite(Model):
 
     class Meta:
         ordering = ('user',)
-        constraints = [
+        constraints = (
             UniqueConstraint(
                 name='unique_recipe_in_favorite',
                 fields=('user', 'recipe'),
             ),
-        ]
+        )
 
 
 class ShoppingCart(Model):
@@ -199,9 +215,9 @@ class ShoppingCart(Model):
 
     class Meta:
         ordering = ('user',)
-        constraints = [
+        constraints = (
             UniqueConstraint(
                 name='unique_recipe_in_cart',
                 fields=('user', 'recipe'),
             ),
-        ]
+        )

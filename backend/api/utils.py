@@ -1,16 +1,34 @@
 from abc import ABC
-from base64 import b64decode
 
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.files.base import ContentFile
 from rest_framework.response import Response
-from rest_framework.serializers import ImageField, ModelSerializer
+from rest_framework.serializers import ModelSerializer
 from rest_framework.status import (
     HTTP_201_CREATED,
     HTTP_204_NO_CONTENT,
     HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
 )
+
+from recipes.models import RecipeIngredient, RecipeTag
+
+
+def add_tags_ingredients(recipe, tags, ingredients):
+    RecipeTag.objects.bulk_create([
+        RecipeTag(recipe=recipe, tag=tag) for tag in tags
+    ])
+    RecipeIngredient.objects.bulk_create([
+        RecipeIngredient(
+            recipe=recipe,
+            ingredient=ingredient_data.get('id'),
+            amount=ingredient_data.get('amount'),
+        ) for ingredient_data in ingredients
+    ])
+
+
+def remove_tags_ingredients(recipe):
+    RecipeTag.objects.filter(recipe=recipe).delete()
+    RecipeIngredient.objects.filter(recipe=recipe).delete()
 
 
 class ReadOnlyModelSerializer(ModelSerializer):
@@ -19,15 +37,6 @@ class ReadOnlyModelSerializer(ModelSerializer):
         for field in fields:
             fields[field].read_only = True
         return fields
-
-
-class Base64ImageField(ImageField):
-    def to_internal_value(self, data):
-        if isinstance(data, str) and data.startswith('data:image'):
-            format, imgstr = data.split(';base64,')
-            ext = format.split('/')[-1]
-            data = ContentFile(b64decode(imgstr), name='temp.' + ext)
-        return super().to_internal_value(data)
 
 
 class ExtraEndpoints(ABC):
