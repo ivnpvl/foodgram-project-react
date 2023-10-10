@@ -6,7 +6,7 @@ from django_filters.rest_framework import (
     FilterSet,
 )
 
-from recipes.models import Ingredient, Recipe, Tag, User
+from recipes.models import Ingredient, Recipe, Tag
 
 
 class IngredientFilterSet(FilterSet):
@@ -19,7 +19,7 @@ class IngredientFilterSet(FilterSet):
 
 class RecipeFilterSet(FilterSet):
     name = CharFilter(lookup_expr='istartswith')
-    author = AllValuesMultipleFilter(queryset=User.objects.all())
+    author = AllValuesMultipleFilter()
     tags = ModelMultipleChoiceFilter(
         queryset=Tag.objects.all(),
         field_name='tags__slug',

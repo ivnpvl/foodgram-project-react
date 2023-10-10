@@ -41,10 +41,10 @@ Authorization: token {{Token}}
 
 {
     "ingredients": [{"id": 667, "amount": 3}, {"id": 1123, "amount": 7}],
-    "tags": [1, 2],
+    "tags": [3],
     "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABieywaAAAACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==",
-    "name": "test_1",
-    "text": "test_recipe",
+    "name": "test_7",
+    "text": "test_r_1",
     "cooking_time": 1
 }
 
@@ -56,20 +56,19 @@ Authorization: token {{Token}}
 
 
 ### Patch recipe
-PATCH /api/recipes/46/
+PATCH /api/recipes/7/
 Host: {{Host}}
 Content-type: application/json
 Authorization: token {{Token}}
 
 {   
-    "tags": [2],
     "ingredients": [{"id": 444, "amount": 8}, {"id": 38, "amount": 7}],
     "cooking_time": 2
 }
 
 
 ### Delete recipe
-DELETE /api/recipes/1/
+DELETE /api/recipes/41/
 Host: {{Host}}
 Authorization: token {{Token}}
 

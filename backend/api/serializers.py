@@ -110,6 +110,17 @@ class RecipeSerializer(ModelSerializer):
             'cooking_time',
         )
 
+    def validate(self, data):
+        if not data.get('tags'):
+            raise ValidationError(
+                {'tags': 'Необходимо указать тэги.'}
+            )
+        if not data.get('ingredient_relations'):
+            raise ValidationError(
+                {'ingredients': 'Необходимо указать ингредиенты.'}
+            )
+        return data
+
     def validate_tags(self, value):
         if len(value) != len(set(value)):
             raise ValidationError(
@@ -123,6 +134,13 @@ class RecipeSerializer(ModelSerializer):
             raise ValidationError(
                 {'ingredients':
                     'Запрещено передавать повторяющиеся ингредиенты.'}
+            )
+        return value
+
+    def validate_image(self, value):
+        if not value:
+            raise ValidationError(
+                {'image': 'Обязательно добавьте изображение рецепта.'}
             )
         return value
 
