@@ -1,11 +1,19 @@
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import IntegrityError
 from django.db.models import Sum
 from django.http.response import HttpResponse
 from djoser.views import UserViewSet
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
+from rest_framework.status import (
+    HTTP_200_OK,
+    HTTP_201_CREATED,
+    HTTP_204_NO_CONTENT,
+    HTTP_400_BAD_REQUEST,
+)
 from rest_framework.viewsets import ModelViewSet
 
 from recipes.models import (
@@ -27,10 +35,9 @@ from .serializers import (
     SubscribeSerializer,
     TagSerializer,
 )
-from .utils import UserRelationActions
 
 
-class CustomUserViewSet(UserViewSet, UserRelationActions):
+class CustomUserViewSet(UserViewSet):
     def get_permissions(self):
         if self.action == 'me':
             self.permission_classes = (IsAuthenticated,)
@@ -43,11 +50,36 @@ class CustomUserViewSet(UserViewSet, UserRelationActions):
                 {'errors': 'Нельзя подписаться на самого себя.'},
                 HTTP_400_BAD_REQUEST,
             )
-        return self._create_relation(Subscription, SubscribeSerializer, id)
+        author = get_object_or_404(User, id=id)
+        try:
+            Subscription.objects.create(user=request.user, author=author)
+        except IntegrityError:
+            return Response(
+                {'errors': 'Подписка уже существует.'},
+                HTTP_400_BAD_REQUEST,
+            )
+        return Response(
+            SubscribeSerializer(author, context={'request': request}).data,
+            HTTP_201_CREATED,
+        )
 
     @subscribe.mapping.delete
     def delete_subscribe(self, request, id):
-        return self._delete_relation(Subscription, SubscribeSerializer, id)
+        author = get_object_or_404(User, id=id)
+        try:
+            Subscription.objects.get(
+                user=request.user,
+                author=author,
+            ).delete()
+        except ObjectDoesNotExist:
+            return Response(
+                {'errors': 'Подписки на данного автора не существует.'},
+                HTTP_400_BAD_REQUEST,
+            )
+        return Response(
+            SubscribeSerializer(author, context={'request': request}).data,
+            HTTP_204_NO_CONTENT,
+        )
 
     @action(detail=False, methods=('get',))
     def subscriptions(self, request):
@@ -84,36 +116,58 @@ class TagViewSet(RetriveListViewSet):
     pagination_class = None
 
 
-class RecipeViewSet(ModelViewSet, UserRelationActions):
+class RecipeViewSet(ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = (IsAuthorOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilterSet
 
+    @staticmethod
+    def create_relation(model, request, pk):
+        recipe = get_object_or_404(Recipe, id=pk)
+        try:
+            model.objects.create(user=request.user, recipe=recipe)
+        except IntegrityError:
+            return Response(
+                {'errors': 'Рецепт уже добавлен.'},
+                HTTP_400_BAD_REQUEST,
+            )
+        return Response(
+            RecipeResponseSerializer(recipe).data,
+            HTTP_201_CREATED,
+        )
+
+    @staticmethod
+    def delete_relation(model, request, pk):
+        recipe = get_object_or_404(Recipe, id=pk)
+        try:
+            model.objects.get(user=request.user, recipe=recipe).delete()
+        except ObjectDoesNotExist:
+            return Response(
+                {'errors': 'Рецепт не был добавлен.'},
+                HTTP_400_BAD_REQUEST,
+            )
+        return Response(
+            RecipeResponseSerializer(recipe).data,
+            HTTP_204_NO_CONTENT,
+        )
+
     @action(detail=True, methods=('post',))
     def favorite(self, request, pk):
-        return self._create_relation(Favorite, RecipeResponseSerializer, pk)
+        return self.create_relation(Favorite, request, pk)
 
     @favorite.mapping.delete
     def delete_favorite(self, request, pk):
-        return self._delete_relation(Favorite, RecipeResponseSerializer, pk)
+        return self.delete_relation(Favorite, request, pk)
 
     @action(detail=True, methods=('post',))
     def shopping_cart(self, request, pk):
-        return self._create_relation(
-            ShoppingCart,
-            RecipeResponseSerializer,
-            pk,
-        )
+        return self.create_relation(ShoppingCart, request, pk)
 
     @shopping_cart.mapping.delete
     def delete_shopping_cart(self, request, pk):
-        return self._delete_relation(
-            ShoppingCart,
-            RecipeResponseSerializer,
-            pk,
-        )
+        return self.delete_relation(ShoppingCart, request, pk)
 
     @action(detail=False, methods=('get',))
     def download_shopping_cart(self, request):
