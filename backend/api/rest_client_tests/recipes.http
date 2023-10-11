@@ -43,7 +43,7 @@ Authorization: token {{Token}}
     "ingredients": [{"id": 667, "amount": 3}, {"id": 1123, "amount": 7}],
     "tags": [3],
     "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABieywaAAAACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==",
-    "name": "test_7",
+    "name": "test_8",
     "text": "test_r_1",
     "cooking_time": 1
 }
@@ -74,13 +74,13 @@ Authorization: token {{Token}}
 
 
 ### Add recipe to favorite
-POST /api/recipes/468/favorite/
+POST /api/recipes/40/favorite/
 Host: {{Host}}
 Authorization: token {{Token}}
 
 
 ### Remove recipe from favorite
-DELETE /api/recipes/46/favorite/
+DELETE /api/recipes/40/favorite/
 Host: {{Host}}
 Authorization: token {{Token}}
 
