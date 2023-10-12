@@ -164,19 +164,16 @@ class RecipeSerializer(ModelSerializer):
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredient_relations')
         recipe = Recipe.objects.create(**validated_data, author=user)
-        add_tags_ingredients(recipe=recipe, tags=tags, ingredients=ingredients)
+        add_tags_ingredients(recipe, tags, ingredients)
         return recipe
 
     @atomic
     def update(self, recipe, validated_data):
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredient_relations')
-        for attr, value in validated_data.items():
-            setattr(recipe, attr, value)
-        remove_tags_ingredients(recipe=recipe)
-        add_tags_ingredients(recipe=recipe, tags=tags, ingredients=ingredients)
-        recipe.save()
-        return recipe
+        remove_tags_ingredients(recipe)
+        add_tags_ingredients(recipe, tags, ingredients)
+        return super().update(recipe, validated_data)
 
     def to_representation(self, recipe):
         data = super(RecipeSerializer, self).to_representation(recipe)
